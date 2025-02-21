@@ -226,7 +226,7 @@ namespace MajesticHotel.DataAccess.Migrations
                         column: x => x.CityId,
                         principalTable: "Cities",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -244,12 +244,14 @@ namespace MajesticHotel.DataAccess.Migrations
                         column: x => x.AmenityId,
                         principalTable: "Amenities",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onUpdate: ReferentialAction.Restrict,
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_HotelAmenities_Hotels_HotelId",
                         column: x => x.HotelId,
                         principalTable: "Hotels",
                         principalColumn: "Id",
+                        onUpdate: ReferentialAction.Cascade,
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -277,7 +279,7 @@ namespace MajesticHotel.DataAccess.Migrations
                         column: x => x.RoomClassId,
                         principalTable: "RoomClasses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(

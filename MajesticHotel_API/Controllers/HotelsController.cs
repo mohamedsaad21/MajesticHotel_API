@@ -32,7 +32,7 @@ namespace MajesticHotel_HotelAPI.Controllers
         {
             try
             {
-                _response.Result = await _db.GetAllWithAmenitiesAsync();
+                _response.Result = await _db.GetAllWithAmenitiesAsync(pageSize:pageSize, pageNumber:pageNumber);
 
                 Pagination pagination = new Pagination() { PageNumber = pageNumber, PageSize = pageSize };
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagination));

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MajesticHotel.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250221151329_InitialCreate")]
+    [Migration("20250221164116_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
