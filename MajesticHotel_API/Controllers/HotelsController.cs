@@ -18,11 +18,13 @@ namespace MajesticHotel_HotelAPI.Controllers
         protected APIResponse _response;
         private readonly IHotelRepository _db;
         private readonly IMapper _mapper;
-        public HotelsController(IHotelRepository db, IMapper mapper)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public HotelsController(IHotelRepository db, IMapper mapper, IWebHostEnvironment webHostEnvironment)
         {
             _db = db;
             _mapper = mapper;
             this._response = new();
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet]
@@ -86,7 +88,7 @@ namespace MajesticHotel_HotelAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<APIResponse>> CreateHotel([FromBody] HotelsCreateDTO HotelDTO)
+        public async Task<ActionResult<APIResponse>> CreateHotel([FromForm]HotelsCreateDTO HotelDTO, List<IFormFile>? files)
         {
             try
             {
@@ -101,6 +103,20 @@ namespace MajesticHotel_HotelAPI.Controllers
                     hotel.HotelAmenities = HotelDTO.HotelAmenitiesIds.Select(x => new HotelAmenities { AmenityId = x }).ToList();
                 }
                 await _db.CreateAsync(hotel);
+                string wwwRootPath = _webHostEnvironment.WebRootPath;
+                if(files != null && !Directory.Exists(Path.Combine(wwwRootPath, @"images\hotel\" + hotel.Id)))
+                {
+                    System.IO.Directory.CreateDirectory(Path.Combine(wwwRootPath, @"images\hotel\" + hotel.Id));
+                    foreach (var file in files)
+                    {
+                        string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                        string hotelPath = Path.Combine(wwwRootPath, @"images\hotel\" + hotel.Id);
+                        using(var fileStream = new FileStream(Path.Combine(hotelPath, fileName), FileMode.Create))
+                        {
+                            await file.CopyToAsync(fileStream);
+                        }
+                    }
+                }
 
 
                 _response.Result = CreatedAtRoute("GetHotel", new { Id = hotel.Id }, hotel);
@@ -137,6 +153,12 @@ namespace MajesticHotel_HotelAPI.Controllers
                     return BadRequest(_response);
                 }
                 await _db.RemoveAsync(hotel);
+
+                string wwwRootPath = _webHostEnvironment.WebRootPath;
+                if(Directory.Exists(Path.Combine(wwwRootPath, @"images\hotel\" + id.ToString())))
+                {
+                    System.IO.Directory.Delete(Path.Combine(wwwRootPath, @"images\hotel\" + id.ToString()), true);
+                }
                 _response.StatusCode=HttpStatusCode.OK;
                 return Ok(_response);
             }

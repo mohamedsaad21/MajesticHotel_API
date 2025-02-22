@@ -135,12 +135,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Environment.IsProduction())
 {
     app.UseSwagger();
-    //app.UseSwaggerUI();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
-        options.RoutePrefix = string.Empty; // Set Swagger as default page
-    });
+    app.UseSwaggerUI();
+    //app.UseSwaggerUI(options =>
+    //{
+    //    options.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
+    //    options.RoutePrefix = string.Empty; // Set Swagger as default page
+    //});
 }
 
 app.UseHttpsRedirection();

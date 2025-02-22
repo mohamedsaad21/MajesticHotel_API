@@ -1,6 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 namespace MajesticHotel_HotelAPI.Models.Dto.Hotels
 {
     public class HotelsCreateDTO
@@ -14,10 +13,8 @@ namespace MajesticHotel_HotelAPI.Models.Dto.Hotels
         [Required]
         public string Email { get; set; }
 
-        public string? ImageUrl { get; set; }
         [Required]
         public int CityId { get; set; }
         public List<int>? HotelAmenitiesIds { get; set; }
-
     }
 }

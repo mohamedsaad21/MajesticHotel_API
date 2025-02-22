@@ -27,4 +27,8 @@
     <ProjectReference Include="..\MajesticHotel.Models\MajesticHotel.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\hotel\" />
+  </ItemGroup>
+
 </Project>
