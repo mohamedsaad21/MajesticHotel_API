@@ -8,6 +8,7 @@ using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 using MajesticHotel.Models;
+using MajesticHotel_API.Services.IServices;
 
 namespace MajesticHotel_HotelAPI.Controllers
 {
@@ -18,13 +19,13 @@ namespace MajesticHotel_HotelAPI.Controllers
         protected APIResponse _response;
         private readonly IHotelRepository _db;
         private readonly IMapper _mapper;
-        private readonly IWebHostEnvironment _webHostEnvironment;
-        public HotelsController(IHotelRepository db, IMapper mapper, IWebHostEnvironment webHostEnvironment)
+        private readonly IImageService _imageService;
+        public HotelsController(IHotelRepository db, IMapper mapper, IImageService imageService)
         {
             _db = db;
             _mapper = mapper;
             this._response = new();
-            _webHostEnvironment = webHostEnvironment;
+            _imageService = imageService;
         }
 
         [HttpGet]
@@ -103,21 +104,8 @@ namespace MajesticHotel_HotelAPI.Controllers
                     hotel.HotelAmenities = HotelDTO.HotelAmenitiesIds.Select(x => new HotelAmenities { AmenityId = x }).ToList();
                 }
                 await _db.CreateAsync(hotel);
-                string wwwRootPath = _webHostEnvironment.WebRootPath;
-                if(files != null && !Directory.Exists(Path.Combine(wwwRootPath, @"images\hotel\" + hotel.Id)))
-                {
-                    System.IO.Directory.CreateDirectory(Path.Combine(wwwRootPath, @"images\hotel\" + hotel.Id));
-                    foreach (var file in files)
-                    {
-                        string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                        string hotelPath = Path.Combine(wwwRootPath, @"images\hotel\" + hotel.Id);
-                        using(var fileStream = new FileStream(Path.Combine(hotelPath, fileName), FileMode.Create))
-                        {
-                            await file.CopyToAsync(fileStream);
-                        }
-                    }
-                }
 
+                await _imageService.UploadImagesAsync(files, "Hotel", hotel.Id);
 
                 _response.Result = CreatedAtRoute("GetHotel", new { Id = hotel.Id }, hotel);
                 _response.StatusCode = HttpStatusCode.OK;
@@ -154,11 +142,8 @@ namespace MajesticHotel_HotelAPI.Controllers
                 }
                 await _db.RemoveAsync(hotel);
 
-                string wwwRootPath = _webHostEnvironment.WebRootPath;
-                if(Directory.Exists(Path.Combine(wwwRootPath, @"images\hotel\" + id.ToString())))
-                {
-                    System.IO.Directory.Delete(Path.Combine(wwwRootPath, @"images\hotel\" + id.ToString()), true);
-                }
+                _imageService.DeleteImages("Hotel", id);
+                
                 _response.StatusCode=HttpStatusCode.OK;
                 return Ok(_response);
             }

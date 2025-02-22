@@ -18,9 +18,9 @@ namespace MajesticHotel_HotelAPI.Helpers
             CreateMap<City, CitiesCreateDTO>().ReverseMap();
             CreateMap<City, CitiesUpdateDTO>().ReverseMap();
 
-            CreateMap<Hotel, HotelsDTO>().ReverseMap().ForMember(src => src.ImageUrl, opt => opt.Ignore());
-            CreateMap<Hotel, HotelsCreateDTO>().ReverseMap().ForMember(src => src.ImageUrl, opt => opt.Ignore());
-            CreateMap<Hotel, HotelsUpdateDTO>().ReverseMap().ForMember(src => src.ImageUrl, opt => opt.Ignore());
+            CreateMap<Hotel, HotelsDTO>().ReverseMap();
+            CreateMap<Hotel, HotelsCreateDTO>().ReverseMap();
+            CreateMap<Hotel, HotelsUpdateDTO>().ReverseMap();
 
             CreateMap<RoomClass, RoomClassDTO>().ReverseMap();
             CreateMap<RoomClass, RoomClassCreateDTO>().ReverseMap();

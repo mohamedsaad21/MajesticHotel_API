@@ -5,7 +5,7 @@ namespace MajesticHotel.Models
 {
     public class Room
     {
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         public bool IsAvailable { get; set; }

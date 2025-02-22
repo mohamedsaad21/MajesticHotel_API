@@ -38,7 +38,6 @@ namespace MajesticHotel_HotelAPI.Data
                     Description = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Enim aspernatur sint, cumque dolores impedit vel!",
                     Phone = "01059855423",
                     Email = "owner@grand.com",
-                    ImageUrl = "",
                     CityId = 1
                 },
                 new Hotel
@@ -48,7 +47,6 @@ namespace MajesticHotel_HotelAPI.Data
                     Description = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nisi officia consectetur atque, quod delectus cum.",
                     Phone = "01049512423",
                     Email = "owner@residence.com",
-                    ImageUrl = "",
                     CityId = 2
                 },
                 new Hotel
@@ -58,7 +56,6 @@ namespace MajesticHotel_HotelAPI.Data
                     Description = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus odit, ullam neque corporis officia amet!",
                     Phone = "01099859413",
                     Email = "owner@comfort.com",
-                    ImageUrl = "",
                     CityId = 3
                 },
                 new Hotel
@@ -68,7 +65,6 @@ namespace MajesticHotel_HotelAPI.Data
                     Description = "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Possimus nulla repudiandae asperiores cumque!",
                     Phone = "01059175421",
                     Email = "owner@princess.com",
-                    ImageUrl = "",
                     CityId = 4
                 });
 

@@ -1,4 +1,6 @@
 using MajesticHotel.Models;
+using MajesticHotel_API.Services;
+using MajesticHotel_API.Services.IServices;
 using MajesticHotel_HotelAPI.Data;
 using MajesticHotel_HotelAPI.Helpers;
 using MajesticHotel_HotelAPI.Repository;
@@ -124,6 +126,7 @@ builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
 
 

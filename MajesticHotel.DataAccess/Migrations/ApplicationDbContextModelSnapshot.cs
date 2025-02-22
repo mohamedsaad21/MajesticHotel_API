@@ -259,9 +259,6 @@ namespace MajesticHotel.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -283,7 +280,6 @@ namespace MajesticHotel.DataAccess.Migrations
                             CityId = 1,
                             Description = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Enim aspernatur sint, cumque dolores impedit vel!",
                             Email = "owner@grand.com",
-                            ImageUrl = "",
                             Name = "Grand Hotel",
                             Phone = "01059855423"
                         },
@@ -293,7 +289,6 @@ namespace MajesticHotel.DataAccess.Migrations
                             CityId = 2,
                             Description = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nisi officia consectetur atque, quod delectus cum.",
                             Email = "owner@residence.com",
-                            ImageUrl = "",
                             Name = "Residence Inn",
                             Phone = "01049512423"
                         },
@@ -303,7 +298,6 @@ namespace MajesticHotel.DataAccess.Migrations
                             CityId = 3,
                             Description = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus odit, ullam neque corporis officia amet!",
                             Email = "owner@comfort.com",
-                            ImageUrl = "",
                             Name = "Comfort Inn",
                             Phone = "01099859413"
                         },
@@ -313,7 +307,6 @@ namespace MajesticHotel.DataAccess.Migrations
                             CityId = 4,
                             Description = "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Possimus nulla repudiandae asperiores cumque!",
                             Email = "owner@princess.com",
-                            ImageUrl = "",
                             Name = "Princess Royale",
                             Phone = "01059175421"
                         });
@@ -337,7 +330,10 @@ namespace MajesticHotel.DataAccess.Migrations
             modelBuilder.Entity("MajesticHotel.Models.Room", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MajesticHotel.Models;
+using MajesticHotel_API.Services.IServices;
 using MajesticHotel_HotelAPI.Models;
 using MajesticHotel_HotelAPI.Models.Dto.Rooms;
 using MajesticHotel_HotelAPI.Repository.IRepository;
@@ -18,11 +19,13 @@ namespace MajesticHotel_HotelAPI.Controllers
         protected APIResponse _response;
         private readonly IRoomRepository _db;
         private readonly IMapper _mapper;
-        public RoomsController(IRoomRepository db, IMapper mapper)
+        private readonly IImageService _imageService;
+        public RoomsController(IRoomRepository db, IMapper mapper, IImageService imageService)
         {
             _db = db;
             _mapper = mapper;
             this._response = new();
+            _imageService = imageService;
         }
 
         [HttpGet]
@@ -107,7 +110,7 @@ namespace MajesticHotel_HotelAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<APIResponse>> CreateRoom([FromBody] RoomCreateDTO RoomDTO)
+        public async Task<ActionResult<APIResponse>> CreateRoom([FromForm] RoomCreateDTO RoomDTO, List<IFormFile>? files)
         {
             try
             {
@@ -119,7 +122,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                 var room = _mapper.Map<Room>(RoomDTO);
                 room.CreatedAt = DateTime.Now;
                 await _db.CreateAsync(room);
-
+                await _imageService.UploadImagesAsync(files, "Room", room.Id);
                 _response.Result = CreatedAtRoute("GetRoom", new { Id = room.Id }, room);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
@@ -153,6 +156,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                     return BadRequest(_response);
                 }
                 await _db.RemoveAsync(room);
+                _imageService.DeleteImages("Room", id);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }

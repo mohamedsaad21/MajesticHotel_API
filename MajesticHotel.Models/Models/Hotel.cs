@@ -12,8 +12,6 @@ namespace MajesticHotel.Models
         public string Phone {  get; set; }
         public string Email { get; set; }
 
-        public string? ImageUrl { get; set; }
-
         [ForeignKey(nameof(City))]
         public int CityId { get; set; }
         public City City { get; set; }

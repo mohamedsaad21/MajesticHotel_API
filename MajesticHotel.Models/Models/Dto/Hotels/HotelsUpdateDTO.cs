@@ -15,8 +15,6 @@ namespace MajesticHotel_HotelAPI.Models.Dto.Hotels
         [Required]
         public string Email { get; set; }
         [Required]
-        public string? ImageUrl { get; set; }
-        [Required]
         public int CityId { get; set; }
         public List<int>? HotelAmenitiesIds { get; set; } = new List<int>();
 

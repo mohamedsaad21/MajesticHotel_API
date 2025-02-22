@@ -215,7 +215,6 @@ namespace MajesticHotel.DataAccess.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CityId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -259,7 +258,8 @@ namespace MajesticHotel.DataAccess.Migrations
                 name: "Rooms",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                    .Annotation("SqlServer:Identity", "1, 1"),
                     IsAvailable = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RoomClassId = table.Column<int>(type: "int", nullable: false),
@@ -353,13 +353,13 @@ namespace MajesticHotel.DataAccess.Migrations
 
             migrationBuilder.InsertData(
                 table: "Hotels",
-                columns: new[] { "Id", "CityId", "Description", "Email", "ImageUrl", "Name", "Phone" },
+                columns: new[] { "Id", "CityId", "Description", "Email", "Name", "Phone" },
                 values: new object[,]
                 {
-                    { 1, 1, "Lorem ipsum dolor sit amet consectetur adipisicing elit. Enim aspernatur sint, cumque dolores impedit vel!", "owner@grand.com", "", "Grand Hotel", "01059855423" },
-                    { 2, 2, "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nisi officia consectetur atque, quod delectus cum.", "owner@residence.com", "", "Residence Inn", "01049512423" },
-                    { 3, 3, "Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus odit, ullam neque corporis officia amet!", "owner@comfort.com", "", "Comfort Inn", "01099859413" },
-                    { 4, 4, "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Possimus nulla repudiandae asperiores cumque!", "owner@princess.com", "", "Princess Royale", "01059175421" }
+                    { 1, 1, "Lorem ipsum dolor sit amet consectetur adipisicing elit. Enim aspernatur sint, cumque dolores impedit vel!", "owner@grand.com", "Grand Hotel", "01059855423" },
+                    { 2, 2, "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nisi officia consectetur atque, quod delectus cum.", "owner@residence.com", "Residence Inn", "01049512423" },
+                    { 3, 3, "Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus odit, ullam neque corporis officia amet!", "owner@comfort.com", "Comfort Inn", "01099859413" },
+                    { 4, 4, "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Possimus nulla repudiandae asperiores cumque!", "owner@princess.com", "Princess Royale", "01059175421" }
                 });
 
             migrationBuilder.InsertData(
