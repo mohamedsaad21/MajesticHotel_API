@@ -1,6 +1,7 @@
 ﻿using MajesticHotel.Models;
 using MajesticHotel_API.Services.IServices;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace MajesticHotel_API.Services
 {

@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MajesticHotel.DataAccess\MajesticHotel.DataAccess.csproj" />
     <ProjectReference Include="..\MajesticHotel.Models\MajesticHotel.Models.csproj" />
+    <ProjectReference Include="..\MajesticHotel.Utility\MajesticHotel.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup>

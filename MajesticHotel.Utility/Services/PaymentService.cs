@@ -1,5 +1,6 @@
 ﻿using MajesticHotel.Models;
 using MajesticHotel_HotelAPI.Services.IServices;
+using Microsoft.Extensions.Configuration;
 using Stripe;
 
 namespace MajesticHotel_HotelAPI.Services

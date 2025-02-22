@@ -1,4 +1,6 @@
-﻿namespace MajesticHotel_API.Services.IServices
+﻿using Microsoft.AspNetCore.Http;
+
+namespace MajesticHotel_API.Services.IServices
 {
     public interface IImageService
     {
