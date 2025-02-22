@@ -6,28 +6,28 @@ This project is a **RESTful API** for managing hotel operations, built using .NE
 
 ### Key Features:
 
-- **Repository Design Pattern: Separates data access logic for better maintainability.
+- **Repository Design Pattern**: Separates data access logic for better maintainability.
 
-- **N-Tier Architecture: Organized into layers (API, Business, Data) for a clean and structured codebase.
+- **N-Tier Architecture**: Organized into layers (API, Business, Data) for a clean and structured codebase.
 
-- **CRUD Operations: Full Create, Read, Update, and Delete functionality for hotels, rooms, and bookings.
+- **CRUD Operations**: Full Create, Read, Update, and Delete functionality for hotels, rooms, and bookings.
 
-- **Room Booking: Allows users to book hotel rooms.
+- **Room Booking**: Allows users to book hotel rooms.
 
-- **Stripe Payment Integration: Secure online payments for bookings.
+- **Stripe Payment Integration**: Secure online payments for bookings.
 
-- **Amenities Management: Manage hotel and room amenities.
+- **Amenities Management**: Manage hotel and room amenities.
 
-- **Image Upload: Images are stored on the server in a structured folder system, using the hotel ID for organization.
+- **Image Upload**: Images are stored on the server in a structured folder system, using the hotel ID for organization.
 
 ## Technologies Used
 
-- **.NET Core API
+- **.NET Core API**
 
-- **Entity Framework Core
+- **Entity Framework Core**
 
-- **SQL Server
+- **SQL Server**
 
-- **Stripe API
+- **Stripe API**
 
 - **JWT Authentication
