@@ -30,4 +30,4 @@ This project is a **RESTful API** for managing hotel operations, built using .NE
 
 - **Stripe API**
 
-- **JWT Authentication
+- **JWT Authentication**
