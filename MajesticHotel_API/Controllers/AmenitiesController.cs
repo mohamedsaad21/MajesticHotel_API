@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MajesticHotel.DataAccess.Repository.IRepository;
 using MajesticHotel.Models;
 using MajesticHotel_HotelAPI.Models.Dto.Amenities;
 using MajesticHotel_HotelAPI.Repository.IRepository;
@@ -14,13 +15,13 @@ namespace MajesticHotel_HotelAPI.Controllers
     [ApiController]
     public class AmenitiesController : ControllerBase
     {
-        private readonly IAmenityRepository _amenityRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         protected APIResponse _response;
 
-        public AmenitiesController(IAmenityRepository amenityRepository, IMapper mapper)
+        public AmenitiesController(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _amenityRepository = amenityRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             this._response = new();
         }
@@ -32,7 +33,7 @@ namespace MajesticHotel_HotelAPI.Controllers
             try
             {
                 IEnumerable<AmenityDTO> AmenityList = _mapper.Map<List<AmenityDTO>>
-                    (await _amenityRepository.GetAllAsync(pageSize:pageSize, pageNumber:pageNumber));
+                    (await _unitOfWork.Amenity.GetAllAsync(pageSize:pageSize, pageNumber:pageNumber));
 
                 Pagination pagination = new Pagination() { PageNumber = pageNumber, PageSize = pageSize };
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagination));
@@ -61,7 +62,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var Amenity = await _amenityRepository.GetAsync(u => u.Id == id, tracked: false);
+                var Amenity = await _unitOfWork.Amenity.GetAsync(u => u.Id == id, tracked: false);
                 if (Amenity == null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
@@ -94,14 +95,15 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                if(await _amenityRepository.GetAsync(u => u.Name == AmenityDTO.Name, tracked:false) != null)
+                if(await _unitOfWork.Amenity.GetAsync(u => u.Name == AmenityDTO.Name, tracked:false) != null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages = new List<string> { "Amenity already Exists!" };
                     return BadRequest(_response);
                 }
                 var Amenity = _mapper.Map<Amenity>(AmenityDTO);
-                await _amenityRepository.CreateAsync(Amenity);
+                await _unitOfWork.Amenity.CreateAsync(Amenity);
+                await _unitOfWork.SaveAsync();
                 _response.Result = CreatedAtAction("GetAmenity", new { id = Amenity.Id }, Amenity);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
@@ -128,13 +130,15 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var Amenity = await _amenityRepository.GetAsync(u => u.Id == id, tracked: false);
+                var Amenity = await _unitOfWork.Amenity.GetAsync(u => u.Id == id, tracked: false);
                 if (Amenity == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                await _amenityRepository.RemoveAsync(Amenity);
+                await _unitOfWork.Amenity.RemoveAsync(Amenity);
+                await _unitOfWork.SaveAsync();
+
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             } catch (Exception ex)
@@ -160,20 +164,22 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                if (await _amenityRepository.GetAsync(u => u.Name == AmenityDTO.Name, tracked: false) != null)
+                if (await _unitOfWork.Amenity.GetAsync(u => u.Name == AmenityDTO.Name, tracked: false) != null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages = new List<string> { "Amenity already Exists!" };
                     return BadRequest(_response);
                 }
-                var Amenity = await _amenityRepository.GetAsync(u => u.Id == id, tracked: false);
+                var Amenity = await _unitOfWork.Amenity.GetAsync(u => u.Id == id, tracked: false);
                 if (Amenity == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
                 Amenity = _mapper.Map<Amenity>(AmenityDTO);
-                await _amenityRepository.UpdateAsync(Amenity);
+                await _unitOfWork.Amenity.UpdateAsync(Amenity);
+                await _unitOfWork.SaveAsync();
+
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -200,7 +206,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var Amenity = await _amenityRepository.GetAsync(u => u.Id ==id, tracked: false);
+                var Amenity = await _unitOfWork.Amenity.GetAsync(u => u.Id ==id, tracked: false);
                 if (Amenity == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -208,14 +214,15 @@ namespace MajesticHotel_HotelAPI.Controllers
                 }
                 var AmenityDTO = _mapper.Map<AmenityUpdateDTO>(Amenity);
                 patchDTO.ApplyTo(AmenityDTO);
-                if (await _amenityRepository.GetAsync(u => u.Name == AmenityDTO.Name, tracked: false) != null)
+                if (await _unitOfWork.Amenity.GetAsync(u => u.Name == AmenityDTO.Name, tracked: false) != null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages = new List<string> { "Amenity already Exists!" };
                     return BadRequest(_response);
                 }
                 Amenity = _mapper.Map<Amenity>(AmenityDTO);
-                await _amenityRepository.UpdateAsync(Amenity);
+                await _unitOfWork.Amenity.UpdateAsync(Amenity);
+                await _unitOfWork.SaveAsync();
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }catch (Exception ex)

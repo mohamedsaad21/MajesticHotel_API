@@ -1,10 +1,11 @@
+using MajesticHotel.DataAccess.Repository;
+using MajesticHotel.DataAccess.Repository.IRepository;
 using MajesticHotel.Models;
+using MajesticHotel.Utility;
 using MajesticHotel_API.Services;
 using MajesticHotel_API.Services.IServices;
 using MajesticHotel_HotelAPI.Data;
 using MajesticHotel_HotelAPI.Helpers;
-using MajesticHotel_HotelAPI.Repository;
-using MajesticHotel_HotelAPI.Repository.IRepository;
 using MajesticHotel_HotelAPI.Services;
 using MajesticHotel_HotelAPI.Services.IServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -112,27 +113,20 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.Configure<JWT>(builder.Configuration.GetSection("JWT"));
-builder.Services.Configure<StripeModel>(builder.Configuration.GetSection("StripeSettings"));
-builder.Services.AddScoped<TokenService>();
-builder.Services.AddScoped<CustomerService>();
-builder.Services.AddScoped<ChargeService>();
-builder.Services.AddScoped<ProductService>();
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
 
 
-builder.Services.AddScoped<ICityRepository, CityRepository>();
-builder.Services.AddScoped<IHotelRepository, HotelRepository>();
-builder.Services.AddScoped<IRoomClassRepository, RoomClassRepository>();
-builder.Services.AddScoped<IRoomRepository, RoomRepository>();
-builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IImageService, ImageService>();
-builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
 
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Environment.IsProduction())
@@ -156,10 +150,14 @@ app.MapControllers();
 
 app.UseCors(c => c.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
+app.UseStaticFiles();
+
+StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:Secretkey").Get<string>();
+
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var roles = new[] { Roles.Admin, Roles.Hotel_Manager, Roles.Guest };
+    var roles = new[] { SD.Role_Admin, SD.Role_HotelManager, SD.Role_Guest };
 
     foreach (var role in roles)
     {
@@ -182,7 +180,7 @@ using (var scope = app.Services.CreateScope())
     {
         var user = new ApplicationUser { FirstName = FirstName, LastName = LastName, Email = email, UserName = username };
         await userManager.CreateAsync(user, password);
-        await userManager.AddToRoleAsync(user, Roles.Admin);
+        await userManager.AddToRoleAsync(user, SD.Role_Guest);
     }
 }
 

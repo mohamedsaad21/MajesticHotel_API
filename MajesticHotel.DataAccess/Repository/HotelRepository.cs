@@ -1,21 +1,21 @@
 ﻿using MajesticHotel.Models;
+using MajesticHotel_API.Services.IServices;
 using MajesticHotel_HotelAPI.Data;
-using MajesticHotel_HotelAPI.Models;
-using MajesticHotel_HotelAPI.Models.Dto.Amenities;
 using MajesticHotel_HotelAPI.Models.Dto.Hotels;
 using MajesticHotel_HotelAPI.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 
 namespace MajesticHotel_HotelAPI.Repository
 {
     public class HotelRepository : Repository<Hotel>, IHotelRepository
     {
         private readonly ApplicationDbContext _db;
-        public HotelRepository(ApplicationDbContext db) : base(db)
+        private readonly IImageService _imageService;
+        public HotelRepository(ApplicationDbContext db, IImageService imageService) : base(db)
         {
             _db = db;
+            _imageService = imageService;
         }
 
         public async Task<IEnumerable<HotelsDTO>> GetAllWithAmenitiesAsync(Expression<Func<HotelsDTO, bool>>? filter = null, int pageSize = 0, int pageNumber = 1)
@@ -29,6 +29,7 @@ namespace MajesticHotel_HotelAPI.Repository
                    Phone = h.Phone,
                    Email = h.Email,
                    CityId = h.CityId,
+                   Images = _imageService.GetImageUrls("Hotel", h.Id),
                    Amenities = h.HotelAmenities
                    .Select(ha => new Amenity { Id = ha.Amenity.Id, Name = ha.Amenity.Name, Description = ha.Amenity.Description }).ToList()
                });            
@@ -57,6 +58,7 @@ namespace MajesticHotel_HotelAPI.Repository
                    Phone = h.Phone,
                    Email = h.Email,
                    CityId = h.CityId,
+                   Images = _imageService.GetImageUrls("Hotel", h.Id),
                    Amenities = h.HotelAmenities
                    .Select(ha => new Amenity { Id = ha.Amenity.Id, Name = ha.Amenity.Name, Description = ha.Amenity.Description }).ToList()
                });

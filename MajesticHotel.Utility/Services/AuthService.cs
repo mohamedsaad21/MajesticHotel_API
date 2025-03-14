@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MajesticHotel.Models;
+using MajesticHotel.Utility;
 using MajesticHotel_HotelAPI.Helpers;
 using MajesticHotel_HotelAPI.Models;
 using MajesticHotel_HotelAPI.Services.IServices;
@@ -46,7 +47,7 @@ namespace MajesticHotel_HotelAPI.Services
                 return new AuthModel { Message = errors };
             }
 
-            await _userManager.AddToRoleAsync(user, Roles.Guest);
+            await _userManager.AddToRoleAsync(user, SD.Role_Guest);
 
             var jwtSecurityToken = await CreateJwtToken(user);
             return new AuthModel 
@@ -55,7 +56,7 @@ namespace MajesticHotel_HotelAPI.Services
                 Email = model.Email,
                 Username = model.Username,
                 Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
-                Roles = new List<string> { Roles.Guest },
+                Roles = new List<string> { SD.Role_Guest },
                 ExpiresOn = jwtSecurityToken.ValidTo    
             };
         }

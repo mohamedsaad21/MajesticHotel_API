@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -26,7 +27,9 @@ namespace MajesticHotel.Models
         public int Children { get; set; }
         public decimal TotalPrice { get; set; }
 
-        public bool PaymentStatus { get; set; }
+        [DefaultValue("pending")]
+        public string PaymentStatus { get; set; }
+        public string? SessionId { get; set; }
         public string? PaymentIntentId { get; set; }
 
     }

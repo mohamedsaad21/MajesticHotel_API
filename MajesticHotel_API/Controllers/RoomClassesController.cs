@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MajesticHotel.DataAccess.Repository.IRepository;
 using MajesticHotel.Models;
 using MajesticHotel_HotelAPI.Models;
 using MajesticHotel_HotelAPI.Models.Dto.RoomClasses;
@@ -16,11 +17,11 @@ namespace MajesticHotel_HotelAPI.Controllers
     public class RoomClassesController : ControllerBase
     {
         protected APIResponse _response;
-        private readonly IRoomClassRepository _db;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public RoomClassesController(IRoomClassRepository db, IMapper mapper)
+        public RoomClassesController(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _db = db;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             this._response = new();
         }
@@ -32,7 +33,7 @@ namespace MajesticHotel_HotelAPI.Controllers
         {
             try
             {
-                _response.Result = _mapper.Map<IEnumerable<RoomClassDTO>>(await _db.GetAllAsync(pageSize:pageSize, pageNumber:pageNumber));
+                _response.Result = _mapper.Map<IEnumerable<RoomClassDTO>>(await _unitOfWork.RoomClass.GetAllAsync(pageSize:pageSize, pageNumber:pageNumber));
 
                 Pagination pagination = new Pagination() { PageNumber = pageNumber, PageSize = pageSize };
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagination));
@@ -63,7 +64,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var RoomClass = await _db.GetAsync(u => u.Id == id);
+                var RoomClass = await _unitOfWork.RoomClass.GetAsync(u => u.Id == id);
                 if (RoomClass == null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
@@ -97,7 +98,9 @@ namespace MajesticHotel_HotelAPI.Controllers
                     return BadRequest(_response);
                 }
                 var RoomClass = _mapper.Map<RoomClass>(RoomClassDTO);
-                await _db.CreateAsync(RoomClass);
+                await _unitOfWork.RoomClass.CreateAsync(RoomClass);
+                await _unitOfWork.SaveAsync();
+
 
                 _response.Result = CreatedAtRoute("GetRoomClass", new { Id = RoomClass.Id }, RoomClass);
                 _response.StatusCode = HttpStatusCode.OK;
@@ -126,13 +129,15 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var RoomClass = await _db.GetAsync(u => u.Id == id);
+                var RoomClass = await _unitOfWork.RoomClass.GetAsync(u => u.Id == id);
                 if (RoomClass == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                await _db.RemoveAsync(RoomClass);
+                await _unitOfWork.RoomClass.RemoveAsync(RoomClass);
+                await _unitOfWork.SaveAsync();
+
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -158,14 +163,16 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var RoomClass = await _db.GetAsync(u => u.Id == id, tracked: false);
+                var RoomClass = await _unitOfWork.RoomClass.GetAsync(u => u.Id == id, tracked: false);
                 if (RoomClass == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
                 RoomClass = _mapper.Map<RoomClass>(RoomClassDTO);
-                await _db.UpdateAsync(RoomClass);
+                await _unitOfWork.RoomClass.UpdateAsync(RoomClass);
+                await _unitOfWork.SaveAsync();
+
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -192,7 +199,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var RoomClass = await _db.GetAsync(u => u.Id == id, tracked: false);
+                var RoomClass = await _unitOfWork.RoomClass.GetAsync(u => u.Id == id, tracked: false);
                 if (RoomClass == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -202,7 +209,9 @@ namespace MajesticHotel_HotelAPI.Controllers
                 patchDTO.ApplyTo(RoomClassDTO);
                 RoomClass = _mapper.Map<RoomClass>(RoomClassDTO);
 
-                await _db.UpdateAsync(RoomClass);
+                await _unitOfWork.RoomClass.UpdateAsync(RoomClass);
+                await _unitOfWork.SaveAsync();
+
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }

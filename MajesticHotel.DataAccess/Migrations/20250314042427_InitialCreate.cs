@@ -225,7 +225,7 @@ namespace MajesticHotel.DataAccess.Migrations
                         column: x => x.CityId,
                         principalTable: "Cities",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -243,14 +243,12 @@ namespace MajesticHotel.DataAccess.Migrations
                         column: x => x.AmenityId,
                         principalTable: "Amenities",
                         principalColumn: "Id",
-                        onUpdate: ReferentialAction.Restrict,
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_HotelAmenities_Hotels_HotelId",
                         column: x => x.HotelId,
                         principalTable: "Hotels",
                         principalColumn: "Id",
-                        onUpdate: ReferentialAction.Cascade,
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -259,7 +257,7 @@ namespace MajesticHotel.DataAccess.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                    .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     IsAvailable = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RoomClassId = table.Column<int>(type: "int", nullable: false),
@@ -279,7 +277,7 @@ namespace MajesticHotel.DataAccess.Migrations
                         column: x => x.RoomClassId,
                         principalTable: "RoomClasses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -296,7 +294,8 @@ namespace MajesticHotel.DataAccess.Migrations
                     Adults = table.Column<int>(type: "int", nullable: false),
                     Children = table.Column<int>(type: "int", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PaymentStatus = table.Column<bool>(type: "bit", nullable: false),
+                    PaymentStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SessionId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PaymentIntentId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -441,8 +440,7 @@ namespace MajesticHotel.DataAccess.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Rooms_RoomClassId",
                 table: "Rooms",
-                column: "RoomClassId",
-                unique: true);
+                column: "RoomClassId");
         }
 
         /// <inheritdoc />

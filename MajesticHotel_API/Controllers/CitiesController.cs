@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MajesticHotel.DataAccess.Repository.IRepository;
 using MajesticHotel.Models;
 using MajesticHotel_HotelAPI.Models;
 using MajesticHotel_HotelAPI.Models.Dto.Cities;
@@ -17,11 +18,11 @@ namespace MajesticHotel_HotelAPI.Controllers
     public class CitiesController : ControllerBase
     {
         protected APIResponse _response;
-        private readonly ICityRepository _db;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public CitiesController(ICityRepository db, IMapper mapper)
+        public CitiesController(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _db = db;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             this._response = new();
         }
@@ -34,7 +35,7 @@ namespace MajesticHotel_HotelAPI.Controllers
         {
             try
             {
-                _response.Result = _mapper.Map<IEnumerable<CitiesDTO>>(await _db.GetAllAsync(pageSize:pageSize, pageNumber:pageNumber));
+                _response.Result = _mapper.Map<IEnumerable<CitiesDTO>>(await _unitOfWork.City.GetAllAsync(pageSize:pageSize, pageNumber:pageNumber));
 
                 Pagination pagination = new Pagination() { PageNumber = pageNumber, PageSize = pageSize };
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagination));
@@ -65,7 +66,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var city = await _db.GetAsync(u => u.Id == id);
+                var city = await _unitOfWork.City.GetAsync(u => u.Id == id);
                 if (city == null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
@@ -98,13 +99,14 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                if (await _db.GetAsync(u => u.Name.ToLower() == CityDTO.Name.ToLower()) != null)
+                if (await _unitOfWork.City.GetAsync(u => u.Name.ToLower() == CityDTO.Name.ToLower()) != null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
                     return BadRequest(_response);
                 }
                 var city = _mapper.Map<City>(CityDTO);
-                await _db.CreateAsync(city);
+                await _unitOfWork.City.CreateAsync(city);
+                await _unitOfWork.SaveAsync();
 
                 _response.Result = CreatedAtRoute("GetCity", new { Id = city.Id }, city);
                 _response.StatusCode = HttpStatusCode.OK;
@@ -134,13 +136,15 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var city = await _db.GetAsync(u => u.Id == id);
+                var city = await _unitOfWork.City.GetAsync(u => u.Id == id);
                 if (city == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                await _db.RemoveAsync(city);
+                await _unitOfWork.City.RemoveAsync(city);
+                await _unitOfWork.SaveAsync();
+
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -166,20 +170,22 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                if (await _db.GetAsync(u => u.Name.ToLower() == CityDTO.Name.ToLower()) != null)
+                if (await _unitOfWork.City.GetAsync(u => u.Name.ToLower() == CityDTO.Name.ToLower() && u.Id != id) != null)
                 {
                     
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var city = await _db.GetAsync(u => u.Id == id, tracked: false);
+                var city = await _unitOfWork.City.GetAsync(u => u.Id == id, tracked: false);
                 if (city == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
                 city = _mapper.Map<City>(CityDTO);
-                await _db.UpdateAsync(city);
+                await _unitOfWork.City.UpdateAsync(city);
+                await _unitOfWork.SaveAsync();
+
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -206,7 +212,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var city = await _db.GetAsync(u => u.Id == id, tracked: false);
+                var city = await _unitOfWork.City.GetAsync(u => u.Id == id, tracked: false);
                 if (city == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -216,7 +222,9 @@ namespace MajesticHotel_HotelAPI.Controllers
                 patchDTO.ApplyTo(cityDTO);
                 city = _mapper.Map<City>(cityDTO);
 
-                await _db.UpdateAsync(city);
+                await _unitOfWork.City.UpdateAsync(city);
+                await _unitOfWork.SaveAsync();
+
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }

@@ -1,15 +1,12 @@
 ﻿using AutoMapper;
+using MajesticHotel.DataAccess.Repository.IRepository;
 using MajesticHotel.Models;
-using MajesticHotel_HotelAPI.Models;
 using MajesticHotel_HotelAPI.Models.Dto.Bookings;
-using MajesticHotel_HotelAPI.Repository.IRepository;
-using MajesticHotel_HotelAPI.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Stripe.Checkout;
 using System.Net;
-using System.Security.Claims;
 using System.Text.Json;
 
 namespace MajesticHotel_HotelAPI.Controllers
@@ -20,24 +17,14 @@ namespace MajesticHotel_HotelAPI.Controllers
     public class BookingController : ControllerBase
     {
         protected APIResponse _response;
-        private readonly IBookingRepository _bookingRepository;
-        private readonly IRoomRepository _roomRepository;
-        private readonly IRoomClassRepository _roomClassRepository;
-        private readonly IPaymentService _paymentService;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public BookingController(IBookingRepository db,
-            IMapper mapper,
-            IRoomRepository roomRepository,
-            IPaymentService paymentService,
-            IRoomClassRepository roomClassRepository)
+        public BookingController(IUnitOfWork unitOfWork,IMapper mapper)
         {
-            _bookingRepository = db;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _roomRepository = roomRepository;
             this._response = new();
-            _roomClassRepository = roomClassRepository;
-            _paymentService = paymentService;
         }
 
         [HttpGet]
@@ -50,7 +37,7 @@ namespace MajesticHotel_HotelAPI.Controllers
             {
                 var userId = User.FindFirst("uid")?.Value;
                 IEnumerable<Booking> bookings = 
-                    await _bookingRepository.GetAllAsync(u => u.UserId == userId, pageSize:pageSize, pageNumber:pageNumber);
+                    await _unitOfWork.Booking.GetAllAsync(u => u.UserId == userId, pageSize:pageSize, pageNumber:pageNumber);
 
                 Pagination pagination = new Pagination() { PageNumber = pageNumber, PageSize = pageSize };
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagination));
@@ -81,7 +68,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                     return BadRequest(_response);
                 }
                 var userId = User.FindFirst("uid")?.Value;
-                _response.Result = _mapper.Map<BookingDTO>(await _bookingRepository.GetAsync(u => u.Id == id && u.UserId == userId));
+                _response.Result = _mapper.Map<BookingDTO>(await _unitOfWork.Booking.GetAsync(u => u.Id == id && u.UserId == userId));
                 if(_response.Result == null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
@@ -105,7 +92,7 @@ namespace MajesticHotel_HotelAPI.Controllers
         {
             try
             {
-                var room = await _roomRepository.GetAsync(u => u.Id == bookingDTO.RoomId);
+                var room = await _unitOfWork.Room.GetAsync(u => u.Id == bookingDTO.RoomId);
                 if(room == null || !room.IsAvailable)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -114,7 +101,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                 }
                 var booking = _mapper.Map<Booking>(bookingDTO);
                 booking.UserId = User.FindFirst("uid")?.Value!;
-                var roomClass = await _roomClassRepository.GetAsync(u => u.Id == room.RoomClassId);
+                var roomClass = await _unitOfWork.RoomClass.GetAsync(u => u.Id == room.RoomClassId);
                 if(booking.Adults > roomClass.AdultsCapacity || booking.Children > roomClass.ChildrenCapacity)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -130,10 +117,41 @@ namespace MajesticHotel_HotelAPI.Controllers
                 var duration = (bookingDTO.CheckOutDate.Date - booking.CheckInDate).Days;
 
                 booking.TotalPrice = duration * roomClass.PricePerNight;
-                booking.PaymentStatus = false;
-                room.IsAvailable = false;
 
-                await _bookingRepository.CreateAsync(booking);
+
+                var options = new SessionCreateOptions
+                {
+                    SuccessUrl = $"https://localhost:44361/api/room/{room.Id}",
+                    CancelUrl = $"https://localhost:44361/api/room/{room.Id}",
+                    LineItems = new List<SessionLineItemOptions>(),
+                    Mode = "payment",
+                };
+                var sessionLineItem = new SessionLineItemOptions
+                {
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long)(booking.TotalPrice * 100),
+                        Currency = "usd",
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = roomClass.Name
+                        }                       
+                    },
+                    Quantity = 1
+                };
+                options.LineItems.Add(sessionLineItem);
+                var service = new SessionService();
+                Session session = service.Create(options);
+
+                _unitOfWork.BookingHeader.UpdateStripePaymentId(booking.Id, session.Id, session.PaymentIntentId);
+                booking.PaymentStatus = "paid";
+                room.IsAvailable = false;
+                await _unitOfWork.Booking.CreateAsync(booking);
+                await _unitOfWork.SaveAsync(); 
+
+                Response.Headers.Add("Location", session.Url);
+
+
                 _response.Result = CreatedAtAction("GetBooking", new { Id = booking.Id }, booking);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
@@ -160,15 +178,17 @@ namespace MajesticHotel_HotelAPI.Controllers
                     return BadRequest(_response);
                 }
                 var userId = User.FindFirst("uid")?.Value;
-                var booking = await _bookingRepository.GetAsync(u => u.Id == id && u.UserId == userId);
+                var booking = await _unitOfWork.Booking.GetAsync(u => u.Id == id && u.UserId == userId);
                 if(booking == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var room = await _roomRepository.GetAsync(u => u.Id == booking.RoomId);
+                var room = await _unitOfWork.Room.GetAsync(u => u.Id == booking.RoomId);
                 room.IsAvailable = true;
-                await _bookingRepository.RemoveAsync(booking);
+                await _unitOfWork.Booking.RemoveAsync(booking);
+                await _unitOfWork.SaveAsync();
+
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
@@ -194,8 +214,8 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode=HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var booking = await _bookingRepository.GetAsync(u => u.Id == id, tracked: false);
-                var oldRoom = await _roomRepository.GetAsync(u => u.Id == booking.RoomId);
+                var booking = await _unitOfWork.Booking.GetAsync(u => u.Id == id, tracked: false);
+                var oldRoom = await _unitOfWork.Room.GetAsync(u => u.Id == booking.RoomId);
                 if(booking == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -203,7 +223,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                 }
                 
                 booking = _mapper.Map<Booking>(bookingDTO);
-                var room = await _roomRepository.GetAsync(u => u.Id == bookingDTO.RoomId);
+                var room = await _unitOfWork.Room.GetAsync(u => u.Id == bookingDTO.RoomId);
 
                 booking.UserId = User.FindFirst("uid")?.Value!;
 
@@ -221,7 +241,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                     return BadRequest(_response);
                 }
 
-                var roomClass = await _roomClassRepository.GetAsync(u => u.Id == room.RoomClassId);
+                var roomClass = await _unitOfWork.RoomClass.GetAsync(u => u.Id == room.RoomClassId);
                 if (booking.Adults > roomClass.AdultsCapacity || booking.Children > roomClass.ChildrenCapacity)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -232,17 +252,15 @@ namespace MajesticHotel_HotelAPI.Controllers
                 var duration = (booking.CheckOutDate.Date - booking.CheckInDate.Date).Days;
                 booking.TotalPrice = duration * roomClass.PricePerNight;
 
-                //var paymentIntent = _paymentService.CreateOrUpdatePaymentIntent(booking.TotalPrice);
-
-                booking.PaymentStatus = false;
-
                 if (oldRoom.Id != room.Id)
                 {
                     oldRoom.IsAvailable = true;
                     room.IsAvailable = false;
                 }
 
-                await _bookingRepository.UpdateAsync(booking);
+                await _unitOfWork.Booking.UpdateAsync(booking);
+                await _unitOfWork.SaveAsync();
+
 
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
@@ -267,8 +285,8 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var booking = await _bookingRepository.GetAsync(u => u.Id == id, tracked: false);
-                var oldRoom = await _roomRepository.GetAsync(u => u.Id == booking.RoomId);
+                var booking = await _unitOfWork.Booking.GetAsync(u => u.Id == id, tracked: false);
+                var oldRoom = await _unitOfWork.Room.GetAsync(u => u.Id == booking.RoomId);
                 var bookingDTO = _mapper.Map<BookingUpdateDTO>(booking);
                 patchDTO.ApplyTo(bookingDTO);
                 booking = _mapper.Map<Booking>(bookingDTO);
@@ -278,7 +296,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var room = await _roomRepository.GetAsync(u => u.Id == booking.RoomId);
+                var room = await _unitOfWork.Room.GetAsync(u => u.Id == booking.RoomId);
                 if (oldRoom.Id != room.Id && !room.IsAvailable)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -291,7 +309,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                     _response.ErrorMessages = new List<string> { "CheckInDate is Invalid!" };
                     return BadRequest(_response);
                 }
-                var roomClass = await _roomClassRepository.GetAsync(u => u.Id == room.RoomClassId);
+                var roomClass = await _unitOfWork.RoomClass.GetAsync(u => u.Id == room.RoomClassId);
                 if (booking.Adults > roomClass.AdultsCapacity || booking.Children > roomClass.ChildrenCapacity)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -301,15 +319,15 @@ namespace MajesticHotel_HotelAPI.Controllers
                 var duration = (booking.CheckOutDate - booking.CheckInDate).Days;
                 booking.TotalPrice = duration * roomClass.PricePerNight;
 
-                var paymentIntent = _paymentService.CreateOrUpdatePaymentIntent(booking.TotalPrice);
 
-                booking.PaymentStatus = false;
                 if (oldRoom.Id != room.Id)
                 {
                     oldRoom.IsAvailable = true;
                     room.IsAvailable = false;
                 }
-                await _bookingRepository.UpdateAsync(booking);
+                await _unitOfWork.Booking.UpdateAsync(booking);
+                await _unitOfWork.SaveAsync();
+
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);

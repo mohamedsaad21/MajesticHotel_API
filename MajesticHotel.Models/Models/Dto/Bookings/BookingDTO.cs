@@ -14,8 +14,7 @@ namespace MajesticHotel_HotelAPI.Models.Dto.Bookings
 
         public decimal TotalPrice { get; set; }
 
-        public bool PaymentStatus { get; set; }
-        public string PaymentIntentId { get; set; }
+        public string PaymentStatus { get; set; }
 
         public int Adults { get; set; }
         public int Children { get; set; }

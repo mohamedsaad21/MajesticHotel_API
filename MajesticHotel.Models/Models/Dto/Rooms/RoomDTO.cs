@@ -12,5 +12,6 @@ namespace MajesticHotel_HotelAPI.Models.Dto.Rooms
 
         public bool IsAvailable { get; set; }
 
+        public List<string> Images { get; set; }
     }
 }

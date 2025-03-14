@@ -13,6 +13,7 @@ namespace MajesticHotel_HotelAPI.Models.Dto.Hotels
         public string Email { get; set; }
         public int CityId { get; set; }
         public City City { get; set; }
+        public List<string> Images { get; set; }
 
         public List<Amenity> Amenities { get; set; } = new List<Amenity>();
     }

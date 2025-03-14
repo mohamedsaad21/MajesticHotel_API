@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MajesticHotel.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250222122942_InitialCreate")]
+    [Migration("20250314042427_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -173,11 +173,15 @@ namespace MajesticHotel.DataAccess.Migrations
                     b.Property<string>("PaymentIntentId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("PaymentStatus")
-                        .HasColumnType("bit");
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RoomId")
                         .HasColumnType("int");
+
+                    b.Property<string>("SessionId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
@@ -354,8 +358,7 @@ namespace MajesticHotel.DataAccess.Migrations
 
                     b.HasIndex("HotelId");
 
-                    b.HasIndex("RoomClassId")
-                        .IsUnique();
+                    b.HasIndex("RoomClassId");
 
                     b.ToTable("Rooms");
 
@@ -671,8 +674,8 @@ namespace MajesticHotel.DataAccess.Migrations
                         .IsRequired();
 
                     b.HasOne("MajesticHotel.Models.RoomClass", "RoomClass")
-                        .WithOne("Room")
-                        .HasForeignKey("MajesticHotel.Models.Room", "RoomClassId")
+                        .WithMany("Rooms")
+                        .HasForeignKey("RoomClassId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -752,8 +755,7 @@ namespace MajesticHotel.DataAccess.Migrations
 
             modelBuilder.Entity("MajesticHotel.Models.RoomClass", b =>
                 {
-                    b.Navigation("Room")
-                        .IsRequired();
+                    b.Navigation("Rooms");
                 });
 #pragma warning restore 612, 618
         }

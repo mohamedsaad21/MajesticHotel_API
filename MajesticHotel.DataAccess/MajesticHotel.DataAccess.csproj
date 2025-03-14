@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MajesticHotel.Models\MajesticHotel.Models.csproj" />
+    <ProjectReference Include="..\MajesticHotel.Utility\MajesticHotel.Utility.csproj" />
   </ItemGroup>
 
 </Project>

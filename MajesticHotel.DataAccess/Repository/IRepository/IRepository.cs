@@ -9,6 +9,5 @@ namespace MajesticHotel_HotelAPI.Repository.IRepository
         Task CreateAsync(T entity);
         Task RemoveAsync(T entity);
         Task UpdateAsync(T entity);
-        Task SaveAsync();
     }
 }

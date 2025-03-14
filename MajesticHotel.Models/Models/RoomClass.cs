@@ -13,6 +13,6 @@ namespace MajesticHotel.Models
         public int ChildrenCapacity { get; set; }
         public decimal PricePerNight { get; set; }
 
-        public Room Room { get; set; }
+        public List<Room> Rooms { get; set; }
     }
 }
