@@ -27,9 +27,8 @@ namespace MajesticHotel.Models
         public int Children { get; set; }
         public decimal TotalPrice { get; set; }
 
-        [DefaultValue("pending")]
-        public string PaymentStatus { get; set; }
-        public string? SessionId { get; set; }
+        public string? PaymentStatus { get; set; }
+        public string? ClientSecret { get; set; }
         public string? PaymentIntentId { get; set; }
 
     }

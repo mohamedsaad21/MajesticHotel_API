@@ -2,6 +2,7 @@ using MajesticHotel.DataAccess.Repository;
 using MajesticHotel.DataAccess.Repository.IRepository;
 using MajesticHotel.Models;
 using MajesticHotel.Utility;
+using MajesticHotel.Utility.Services;
 using MajesticHotel_API.Services;
 using MajesticHotel_API.Services.IServices;
 using MajesticHotel_HotelAPI.Data;
@@ -115,13 +116,10 @@ builder.Services.AddAuthentication(options =>
 builder.Services.Configure<JWT>(builder.Configuration.GetSection("JWT"));
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
 
-
-
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IImageService, ImageService>();
-
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
@@ -151,8 +149,6 @@ app.MapControllers();
 app.UseCors(c => c.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
 app.UseStaticFiles();
-
-StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:Secretkey").Get<string>();
 
 using (var scope = app.Services.CreateScope())
 {

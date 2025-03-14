@@ -6,7 +6,6 @@ namespace MajesticHotel.DataAccess.Repository.IRepository
     {
         IAmenityRepository Amenity { get; }
         IBookingRepository Booking { get; }
-        IBookingHeaderRepository BookingHeader { get; }
         ICityRepository City { get; }
         IHotelRepository Hotel { get; }
         IRoomClassRepository RoomClass { get; }

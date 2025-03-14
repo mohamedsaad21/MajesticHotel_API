@@ -100,6 +100,7 @@ namespace MajesticHotel_HotelAPI.Controllers
                     return BadRequest(_response);
                 }
                 var booking = _mapper.Map<Booking>(bookingDTO);
+
                 booking.UserId = User.FindFirst("uid")?.Value!;
                 var roomClass = await _unitOfWork.RoomClass.GetAsync(u => u.Id == room.RoomClassId);
                 if(booking.Adults > roomClass.AdultsCapacity || booking.Children > roomClass.ChildrenCapacity)
@@ -117,39 +118,11 @@ namespace MajesticHotel_HotelAPI.Controllers
                 var duration = (bookingDTO.CheckOutDate.Date - booking.CheckInDate).Days;
 
                 booking.TotalPrice = duration * roomClass.PricePerNight;
-
-
-                var options = new SessionCreateOptions
-                {
-                    SuccessUrl = $"https://localhost:44361/api/room/{room.Id}",
-                    CancelUrl = $"https://localhost:44361/api/room/{room.Id}",
-                    LineItems = new List<SessionLineItemOptions>(),
-                    Mode = "payment",
-                };
-                var sessionLineItem = new SessionLineItemOptions
-                {
-                    PriceData = new SessionLineItemPriceDataOptions
-                    {
-                        UnitAmount = (long)(booking.TotalPrice * 100),
-                        Currency = "usd",
-                        ProductData = new SessionLineItemPriceDataProductDataOptions
-                        {
-                            Name = roomClass.Name
-                        }                       
-                    },
-                    Quantity = 1
-                };
-                options.LineItems.Add(sessionLineItem);
-                var service = new SessionService();
-                Session session = service.Create(options);
-
-                _unitOfWork.BookingHeader.UpdateStripePaymentId(booking.Id, session.Id, session.PaymentIntentId);
-                booking.PaymentStatus = "paid";
                 room.IsAvailable = false;
-                await _unitOfWork.Booking.CreateAsync(booking);
-                await _unitOfWork.SaveAsync(); 
+                booking.PaymentStatus = "pending";
 
-                Response.Headers.Add("Location", session.Url);
+                await _unitOfWork.Booking.CreateAsync(booking);
+                await _unitOfWork.SaveAsync();                
 
 
                 _response.Result = CreatedAtAction("GetBooking", new { Id = booking.Id }, booking);

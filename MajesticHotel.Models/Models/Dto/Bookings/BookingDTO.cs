@@ -10,11 +10,11 @@ namespace MajesticHotel_HotelAPI.Models.Dto.Bookings
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }
         public DateTime CreatedAt { get; set; }
-
-
         public decimal TotalPrice { get; set; }
 
         public string PaymentStatus { get; set; }
+        public string ClientSecret { get; set; }
+        public string PaymentIntentId { get; set; }
 
         public int Adults { get; set; }
         public int Children { get; set; }

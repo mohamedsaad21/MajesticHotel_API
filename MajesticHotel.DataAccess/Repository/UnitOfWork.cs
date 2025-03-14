@@ -9,12 +9,12 @@ namespace MajesticHotel.DataAccess.Repository
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _db;
+
         private readonly IImageService _imageService;
+
         public IAmenityRepository Amenity { get; private set; }
 
         public IBookingRepository Booking { get; private set; }
-
-        public IBookingHeaderRepository BookingHeader { get; private set; }
 
         public ICityRepository City { get; private set; }
 
@@ -32,7 +32,6 @@ namespace MajesticHotel.DataAccess.Repository
             Hotel = new HotelRepository(db, _imageService);
             RoomClass = new RoomClassRepository(db);
             Room = new RoomRepository(db);
-            BookingHeader = new BookingHeaderRepository(db);
         }
 
         public async Task SaveAsync()
