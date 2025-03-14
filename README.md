@@ -8,6 +8,8 @@ This project is a **RESTful API** for managing hotel operations, built using .NE
 
 - **Repository Design Pattern**: Separates data access logic for better maintainability.
 
+- **Unit of Work**: Ensures efficient database transactions by managing multiple repository operations as a single unit.
+
 - **N-Tier Architecture**: Organized into layers (API, Business, Data) for a clean and structured codebase.
 
 - **CRUD Operations**: Full Create, Read, Update, and Delete functionality for hotels, rooms, and bookings.
